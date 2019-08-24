@@ -8,6 +8,19 @@ environment:
       ARCH: x86
       PYTHON: "C:\\Python35"
       PY2EXE_FILE: py2exe-0.9.3.2-cp35-none-win32.whl
+      TOXENV: py35
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      ARCH: x86
+      PYTHON: "C:\\Python36"
+      PY2EXE_FILE: py2exe-0.9.3.2-cp36-none-win32.whl
+      TOXENV: py36
+      
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      ARCH: x86
+      PYTHON: "C:\\Python37"
+      PY2EXE_FILE: py2exe-0.9.3.2-cp37-none-win32.whl
+      TOXENV: py37
     
 artifacts:
   - path: "*-win32.zip"
@@ -15,6 +28,21 @@ artifacts:
 install:
   - IF %ARCH%==msvc14 (CALL C:\"Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %ARCH%)
   - IF %ARCH%==msvc15 (CALL C:\"Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%)
+  - "%PYTHON%\\Scripts\\pip.exe install tox"
 
 build_script:
   - C:\msys64\usr\bin\bash -lc "cd "$APPVEYOR_BUILD_FOLDER"; dist/makeexe"
+
+test_script:
+  # Install required rdiff
+  - curl -LfsS -o rdiff.zip https://www.timedicer.co.uk/rdiff.zip
+  - 7z x rdiff.zip
+  - rdiff --version
+  # Install testcases files
+  - curl -LfsS -o testfiles.tar.gz https://download-mirror.savannah.gnu.org/releases/rdiff-backup/testfiles.tar.gz
+  - 7z x testfiles.tar.gz
+  - move testfiles ../rdiff-backup_testfiles
+  # Run the test
+  - "set LIBRSYNC_DIR=%APPVEYOR_BUILD_FOLDER%\\librsync-%LIBRSYNC_VERSION%"
+  - "%PYTHON%\\Scripts\\tox.exe"
+  
