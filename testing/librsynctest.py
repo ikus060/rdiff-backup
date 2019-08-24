@@ -2,21 +2,21 @@ import unittest, random, subprocess
 from commontest import *
 from rdiff_backup import librsync, log
 
-def MakeRandomFile(path, length = None):
+def MakeRandomFile(path, length=None):
 	"""Writes a random file of given length, or random len if unspecified"""
 	if not length: length = random.randrange(5000, 100000)
 	fp = open(path, "wb")
-	fp_random = open('/dev/urandom', 'rb')
-
-	# Old slow way, may still be of use on systems without /dev/urandom
-	#randseq = []
-	#for i in xrange(random.randrange(5000, 30000)):
-	#	randseq.append(chr(random.randrange(256)))
-	#fp.write("".join(randseq))
-	fp.write(fp_random.read(length))
-
+	# Prefer urandom if available.
+	try:	
+		fp_random = open('/dev/urandom', 'rb')
+		fp.write(fp_random.read(length))
+		fp_random.close()
+	except:
+		# Old slow way, may still be of use on systems without /dev/urandom
+		for i in range(length):
+			fp.write(bytes([random.randrange(256)]))
 	fp.close()
-	fp_random.close()
+
 
 class LibrsyncTest(unittest.TestCase):
 	"""Test various librsync wrapper functions"""
