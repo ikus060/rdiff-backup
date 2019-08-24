@@ -320,7 +320,8 @@ def make_file_dict(filename):
 		if type(filename) == str:
 			attribs = win32file.GetFileAttributesW(filename)
 		else:
-			attribs = win32file.GetFileAttributes(filename)
+			attribs = win32file.GetFileAttributesW(os.fsdecode(filename))
+			
 		if attribs & winnt.FILE_ATTRIBUTE_REPARSE_POINT:
 			data['type'] = 'sym'
 			data['linkname'] = None
