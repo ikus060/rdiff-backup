@@ -1,0 +1,58 @@
+#!/bin/bash
+# Copyright (C) 2019 Patrik Dufresne Service Logiciel inc. All rights reserved.
+# Patrik Dufresne Service Logiciel PROPRIETARY/CONFIDENTIAL.
+# Use is subject to license terms.
+set -e
+set -x
+
+# Input variable
+LIBRSYNC_VERSION=${LIBRSYNC_VERSION:-0.9.7}
+LIBRSYNC_DIR=librsync-$LIBRSYNC_VERSION
+
+#py2exe
+PY2EXE_URL=https://bintray.com/alby128/py2exe/download_file?file_path=$PY2EXE_FILE
+
+#
+# Install py2exe
+#
+wget -O $PY2EXE_FILE $PY2EXE_URL
+$PYTHON/Scripts/pip.exe install $PY2EXE_FILE
+
+# Unset TMP environment to workaround Visual Studio build issue.
+unset TMP
+unset TEMP
+
+#
+# Compile librsync
+#
+wget https://pilotfiber.dl.sourceforge.net/project/librsync/librsync/$LIBRSYNC_VERSION/librsync-$LIBRSYNC_VERSION.tar.gz
+tar -zxvf librsync-$LIBRSYNC_VERSION.tar.gz
+cp dist/librsync/* "$LIBRSYNC_DIR"
+for FILE in dist/librsync/*.diff; do patch -p0 < $FILE; done
+MSBuild.exe "$LIBRSYNC_DIR\librsync.sln" //t:Build //p:Configuration=Release
+mkdir $LIBRSYNC_DIR/include $LIBRSYNC_DIR/lib
+cp $LIBRSYNC_DIR/librsync.h $LIBRSYNC_DIR/librsync-config.h $LIBRSYNC_DIR/include
+cp $LIBRSYNC_DIR/Release/rsync.lib $LIBRSYNC_DIR/lib/
+# Export variable for Wine.
+export LIBRSYNC_DIR=${PWD}\\$LIBRSYNC_DIR
+  
+#
+# Compile rdiff-backup
+#
+RDIFFBACKUP_VERSION=$($PYTHON/python.exe setup.py --version)
+#for FILE in dist/rdiff-backup/*.diff; do patch -p0 < $FILE; done
+$PYTHON/python.exe setup.py build --librsync-dir="$LIBRSYNC_DIR" --lflags="/NODEFAULTLIB:libcmt.lib msvcrt.lib"
+$PYTHON/python.exe setup.py py2exe --single-file
+  
+# 
+# Package
+#
+mv dist/rdiff-backup.exe ./rdiff-backup.exe
+unix2dos -k -n CHANGELOG CHANGELOG.txt
+unix2dos -k -n COPYING COPYING.txt
+unix2dos -k -n README.md README.md
+7z a rdiff-backup-$RDIFFBACKUP_VERSION-win32.zip \
+  rdiff-backup.exe \
+  *.txt \
+  *.html \
+  *.md

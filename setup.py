@@ -58,6 +58,13 @@ if os.name == 'nt':
 				'zipfile': None
 			})
 
+# Define the dependencies according to the platform.
+install_requires = []
+if os.name == 'nt':
+	install_requires = ['pywin32']
+elif os.name == 'posix':
+	install_requires = ['pyxattr', 'pylibacl']
+
 setup(name="rdiff-backup",
 	  version=version_string,
 	  description="Local/remote mirroring+incremental backup",
@@ -65,6 +72,7 @@ setup(name="rdiff-backup",
 	  author_email="rdiff-backup-users@nongnu.org",
 	  url="http://rdiff-backup.net/",
 	  packages = ['rdiff_backup'],
+	  install_requires=install_requires,
 	  package_dir={'':'src'},  # tell distutils packages are under src
 	  ext_modules = [Extension("rdiff_backup.C", ["src/cmodule.c"]),
                          Extension("rdiff_backup._librsync", ["src/_librsyncmodule.c"],

@@ -1,0 +1,20 @@
+environment:
+  
+  LIBRSYNC_VERSION: 0.9.7
+  
+  matrix:
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      ARCH: x86
+      PYTHON: "C:\\Python35"
+      PY2EXE_FILE: py2exe-0.9.3.2-cp35-none-win32.whl
+    
+artifacts:
+  - path: "*-win32.zip"
+
+install:
+  - IF %ARCH%==msvc14 (CALL C:\"Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %ARCH%)
+  - IF %ARCH%==msvc15 (CALL C:\"Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%)
+
+build_script:
+  - C:\msys64\usr\bin\bash -lc "cd "$APPVEYOR_BUILD_FOLDER"; dist/makeexe"
