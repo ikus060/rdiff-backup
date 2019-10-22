@@ -11,7 +11,7 @@ Some notes for developers and other people willing to help development.
     * python3-setuptools (for setup.py)
 * unpack the test files previously available from
 https://download-mirror.savannah.gnu.org/releases/rdiff-backup/testfiles.tar.gz and now temporarily available as
-release under https://github.com/ericzolf/rdiff-backup/releases[]:
+release under https://github.com/ericzolf/rdiff-backup/releases/:
     * The extraction as root (e.g. `sudo tar xvzf rdiff-backup_testfiles_ISORELEASEDATE.tar.gz`) is sadly necessary
 because else the device files won't be extracted as normal user. This needs to happen in the _parent_ directory
 of the Git directory.
@@ -24,6 +24,17 @@ That's it, you can now run the tests:
 * run `tox` to use the default `tox.ini`
 * or `tox -c tox_slow.ini` for long tests
 * or `sudo tox -c tox_root.ini` for the few tests needing root rights
+
+To summarize, here are the command lines to be executed on a fresh Debian installation:
+
+    sudo apt-get update
+    sudo apt-get install python3 python3-dev tox libacl1-dev wget git build-essential librsync-dev rdiff rsync
+    wget -O rdiff-backup_testfiles.tar.gz https://github.com/ericzolf/rdiff-backup/releases/download/Testfiles2019-08-10/rdiff-backup_testfiles_2019-08-10.tar.gz
+    sudo tar -xvf rdiff-backup_testfiles.tar.gz
+    sudo ./rdiff-backup_testfiles.fix.sh
+    git clone https://github.com/rdiff-backup/rdiff-backup.git
+    cd rdiff-backup
+    tox
 
 ## How to debug rdiff-backup?
 
