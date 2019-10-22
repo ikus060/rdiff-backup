@@ -13,3 +13,5 @@ MANIFEST
 
 # setup.py installation files
 src/rdiff_backup.egg-info/
+/.project
+/.pydevproject
